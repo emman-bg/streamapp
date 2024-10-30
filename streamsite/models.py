@@ -1,1 +1,82 @@
 from django.db import models
+from django.db.models import UniqueConstraint
+from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+from simple_history.models import HistoricalRecords
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, related_name='user_profile', on_delete=models.CASCADE)
+    username = models.CharField(max_length=30, unique=True) # override username to max 30 characters
+    email = models.EmailField(unique=True)
+
+    class Meta:
+        # ensure one-to-one of username and email
+        constraints = [
+            UniqueConstraint(fields=['username', 'email'], name='unique_username_email')
+        ]
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def subscriptions(self):
+        return self.subscriptions
+    
+
+class Channel(models.Model):
+    name = models.CharField(max_length=30)
+    owner = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+
+class Subscription(models.Model):
+    WEEKLY = 0
+    MONTHLY = 1
+    QUARTERLY = 2
+    YEARLY = 3
+    SUBSCRIPTION_TYPE_CHOICES = (
+        (WEEKLY, 'Weekly'),
+        (MONTHLY, 'Monthly'),
+        (QUARTERLY, 'Quarterly'),
+        (YEARLY, 'Yearly'),
+    )
+
+    payor = models.ForeignKey(
+        UserProfile, related_name='purchases', on_delete=models.CASCADE)
+    subscriber = models.ForeignKey(
+        UserProfile, related_name='subscriptions',
+        null=True, blank=True, on_delete=models.CASCADE)
+    subscription_type = models.IntegerField(
+        choices=SUBSCRIPTION_TYPE_CHOICES, default=WEEKLY)
+    start_date = models.DateTimeField(auto_now_add=True)
+    subscription_history = HistoricalRecords()
+    end_date = models.DateTimeField(default=datetime.now() + timedelta(days=7))
+    channel = models.ForeignKey(Channel, null=True, blank=True, on_delete=models.SET_NULL)
+
+    @property
+    def subscription_type_display(self):
+        return self.get_subscription_type_display()
+    @property
+    def username(self):
+        return self.user_profile.username
+
+
+class Video(models.Model):
+    file = models.FileField(upload_to='./videos')
+    thumbnail = models.ImageField(upload_to='./thumbnails', blank=True, null=True)
+    date_uploaded = models.DateTimeField(auto_now_add=True)
+    duration = models.DurationField(default=timedelta)
+    uploaded_by = models.ForeignKey(
+        UserProfile, related_name='videos', on_delete=models.CASCADE)
+    removed = models.BooleanField(default=False)
+
+
+class Content(models.Model):
+    title = models.CharField(max_length=150)
+    description = models.TextField(max_length=2000)
+    posted_on = models.DateTimeField(auto_now_add=True)
+    posted_by = models.ForeignKey(
+        UserProfile, related_name='contents', on_delete=models.CASCADE)
+    channel = models.ForeignKey(
+        Channel, related_name='contents', on_delete=models.CASCADE)
+    views = models.PositiveIntegerField(default=0)
