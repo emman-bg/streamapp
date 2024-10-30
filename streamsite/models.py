@@ -42,7 +42,8 @@ class Subscription(models.Model):
     )
 
     payor = models.ForeignKey(
-        UserProfile, related_name='purchases', on_delete=models.CASCADE)
+        UserProfile, related_name='purchases',
+        null=True, blank=True, on_delete=models.CASCADE)
     subscriber = models.ForeignKey(
         UserProfile, related_name='subscriptions',
         null=True, blank=True, on_delete=models.CASCADE)
