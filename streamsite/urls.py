@@ -4,8 +4,8 @@ from . import views
 
 
 urlpatterns = [
-    path('user_profiles/', views.UserProfileGetFilter.as_view()),
-    path('user_profile/<int:pk>', views.UserProfileCreateUpdateDelete.as_view())
+    path('user_profiles/', views.UserProfileListView.as_view()),
+    path('user_profile/<int:pk>', views.UserProfileDetailView.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

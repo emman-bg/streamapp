@@ -9,3 +9,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('start_date', 'end_date')
+
+@admin.register(Channel)
+class ChannelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner', 'date_created')

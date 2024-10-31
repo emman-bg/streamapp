@@ -22,6 +22,10 @@ class UserProfile(models.Model):
     def subscriptions(self):
         return self.subscriptions
     
+    @property
+    def is_creator(self):
+        return Channel.objects.filter(owner=self).exists()
+
 
 class Channel(models.Model):
     name = models.CharField(max_length=30)

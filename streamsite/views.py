@@ -4,11 +4,11 @@ from .models import *
 from .serializers import *
 
 
-class UserProfileGetFilter(generics.ListCreateAPIView):
+class UserProfileListView(generics.ListCreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
 
-class UserProfileCreateUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
+class UserProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
