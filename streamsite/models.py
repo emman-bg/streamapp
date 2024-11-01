@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from simple_history.models import HistoricalRecords
 
+
+FREE_TRIAL_PERIOD = datetime.now() + timedelta(days=7)
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='user_profile', on_delete=models.CASCADE)
     username = models.CharField(max_length=30, unique=True) # override username to max 30 characters
@@ -29,8 +33,14 @@ class UserProfile(models.Model):
 
 class Channel(models.Model):
     name = models.CharField(max_length=30)
-    owner = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    owner = models.OneToOneField(
+        UserProfile, related_name='channel',
+        on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def contents(self):
+        return self.contents
 
 
 class Subscription(models.Model):
@@ -54,9 +64,9 @@ class Subscription(models.Model):
     subscription_type = models.IntegerField(
         choices=SUBSCRIPTION_TYPE_CHOICES, default=WEEKLY)
     start_date = models.DateTimeField(auto_now_add=True)
-    subscription_history = HistoricalRecords()
-    end_date = models.DateTimeField(default=datetime.now() + timedelta(days=7))
+    end_date = models.DateTimeField(default=FREE_TRIAL_PERIOD)
     channel = models.ForeignKey(Channel, null=True, blank=True, on_delete=models.SET_NULL)
+    subscription_history = HistoricalRecords()
 
     @property
     def subscription_type_display(self):
@@ -84,4 +94,5 @@ class Content(models.Model):
         UserProfile, related_name='contents', on_delete=models.CASCADE)
     channel = models.ForeignKey(
         Channel, related_name='contents', on_delete=models.CASCADE)
-    views = models.PositiveIntegerField(default=0)
+    views = models.PositiveBigIntegerField(default=0)
+    likes = models.PositiveBigIntegerField(default=0)
