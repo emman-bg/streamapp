@@ -49,7 +49,7 @@ class VideoSerializer(serializers.ModelSerializer):
         ]
 
 
-class ContentSerializer(models.Model):
+class ContentSerializer(serializers.ModelSerializer):
     posted_by = UserProfileSerializer()
     channel = ChannelSerializer()
 
