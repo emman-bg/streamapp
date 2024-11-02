@@ -1,6 +1,5 @@
 from django.db import models
-from django.db.models import UniqueConstraint
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser
 from datetime import datetime, timedelta
 from simple_history.models import HistoricalRecords
 
@@ -8,16 +7,9 @@ from simple_history.models import HistoricalRecords
 FREE_TRIAL_PERIOD = datetime.now() + timedelta(days=7)
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, related_name='user_profile', on_delete=models.CASCADE)
-    username = models.CharField(max_length=30, unique=True) # override username to max 30 characters
-    email = models.EmailField(unique=True)
-
-    class Meta:
-        # ensure one-to-one of username and email
-        constraints = [
-            UniqueConstraint(fields=['username', 'email'], name='unique_username_email')
-        ]
+class UserProfile(AbstractBaseUser):
+    username = models.CharField(unique=True, max_length=30)
+    email = models.EmailField(unique=True, max_length=30)
 
     def __str__(self):
         return self.username
@@ -71,6 +63,7 @@ class Subscription(models.Model):
     @property
     def subscription_type_display(self):
         return self.get_subscription_type_display()
+
     @property
     def username(self):
         return self.user_profile.username

@@ -2,21 +2,11 @@ from rest_framework import serializers
 from .models import *
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'first_name', 'last_name',
-            'date_joined', 'is_active'
-        ]
-
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
     class Meta:
         model = UserProfile
-        fields = ['user', 'username', 'email', 'subscriptions']
+        fields = ['username', 'email', 'subscriptions', 'is_creator']
 
 
 class ChannelSerializer(serializers.ModelSerializer):
