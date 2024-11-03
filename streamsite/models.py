@@ -1,15 +1,45 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from datetime import datetime, timedelta
 from simple_history.models import HistoricalRecords
 
+SUBSCRIPTION_DURATIONS = [
+    timedelta(days=3),  # free trial
+    timedelta(days=7),  # weekly
+    timedelta(days=30),  # monthly
+    timedelta(days=120),  # quarterly
+    timedelta(days=365),  # annually
+]
 
-FREE_TRIAL_PERIOD = datetime.now() + timedelta(days=7)
+class UserProfileManager(BaseUserManager):
+    def create_user(self, email, username, password=None, **user_fields):
+        print(self, email, username, password, user_fields)
+        if not email:
+            raise ValueError("Email field is required.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username, **user_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, username, password=None, **user_fields):
+        user_fields.setdefault("is_staff", True)
+        user_fields.setdefault("is_superuser", True)
+
+        return self.create_user(email, username, password, **user_fields)
 
 
 class UserProfile(AbstractBaseUser):
     username = models.CharField(unique=True, max_length=30)
     email = models.EmailField(unique=True, max_length=30)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    user_profile_history = HistoricalRecords()
+
+    objects = UserProfileManager()
+
+    REQUIRED_FIELDS = ['username', 'email']
 
     def __str__(self):
         return self.username
@@ -29,6 +59,8 @@ class Channel(models.Model):
         UserProfile, related_name='channel',
         on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    channel_history = HistoricalRecords()
 
     @property
     def contents(self):
@@ -36,10 +68,11 @@ class Channel(models.Model):
 
 
 class Subscription(models.Model):
-    WEEKLY = 0
-    MONTHLY = 1
-    QUARTERLY = 2
-    YEARLY = 3
+    FREE_TRIAL = 0
+    WEEKLY = 1
+    MONTHLY = 2
+    QUARTERLY = 3
+    YEARLY = 4
     SUBSCRIPTION_TYPE_CHOICES = (
         (WEEKLY, 'Weekly'),
         (MONTHLY, 'Monthly'),
@@ -56,7 +89,7 @@ class Subscription(models.Model):
     subscription_type = models.IntegerField(
         choices=SUBSCRIPTION_TYPE_CHOICES, default=WEEKLY)
     start_date = models.DateTimeField(auto_now_add=True)
-    end_date = models.DateTimeField(default=FREE_TRIAL_PERIOD)
+    end_date = models.DateTimeField(null=True, blank=True)
     channel = models.ForeignKey(Channel, null=True, blank=True, on_delete=models.SET_NULL)
     subscription_history = HistoricalRecords()
 
@@ -67,6 +100,13 @@ class Subscription(models.Model):
     @property
     def username(self):
         return self.user_profile.username
+
+    def save(self, *args, **kwargs):
+        subscription_type = kwargs.get('subscription_type', None)
+        if subscription_type:
+            self.end_date =\
+                datetime.now() + SUBSCRIPTION_DURATIONS[subscription_type]
+        super(Subscription, self).save(*args, **kwargs)
 
 
 class Video(models.Model):
@@ -89,3 +129,4 @@ class Content(models.Model):
         Channel, related_name='contents', on_delete=models.CASCADE)
     views = models.PositiveBigIntegerField(default=0)
     likes = models.PositiveBigIntegerField(default=0)
+    content_history = HistoricalRecords()
