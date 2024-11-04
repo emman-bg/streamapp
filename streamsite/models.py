@@ -39,7 +39,8 @@ class UserProfile(AbstractBaseUser):
 
     objects = UserProfileManager()
 
-    REQUIRED_FIELDS = ['username', 'email']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.username
