@@ -34,7 +34,7 @@ class UserProfile(AbstractBaseUser):
     email = models.EmailField(unique=True, max_length=30)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    removed = models.BooleanField(default=False)
     user_profile_history = HistoricalRecords()
 
     objects = UserProfileManager()
@@ -48,7 +48,7 @@ class UserProfile(AbstractBaseUser):
     @property
     def subscriptions(self):
         return self.subscriptions
-    
+
     @property
     def is_creator(self):
         return Channel.objects.filter(owner=self).exists()
@@ -128,6 +128,7 @@ class Content(models.Model):
         UserProfile, related_name='contents', on_delete=models.CASCADE)
     channel = models.ForeignKey(
         Channel, related_name='contents', on_delete=models.CASCADE)
+    removed = models.BooleanField(default=False)
     views = models.PositiveBigIntegerField(default=0)
     likes = models.PositiveBigIntegerField(default=0)
     content_history = HistoricalRecords()

@@ -5,17 +5,17 @@ from .serializers import *
 
 
 class UserProfileListView(generics.ListAPIView):
-    queryset = UserProfile.objects.filter(is_active=True)
+    queryset = UserProfile.objects.filter(removed=False)
     serializer_class = UserProfileSerializer
 
 
 class UserProfileCreateView(generics.CreateAPIView):
-    queryset = UserProfile.objects.filter(is_active=True)
+    queryset = UserProfile.objects.filter(removed=False)
     serializer_class = UserProfileCreateSerializer
 
 
 class UserProfileDetailView(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.filter(is_active=True)
+    queryset = UserProfile.objects.filter(removed=False)
     serializer_class = UserProfileUpdateSerializer
 
 
