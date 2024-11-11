@@ -1,8 +1,12 @@
 from rest_framework import generics
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import *
 from .serializers import *
 
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class UserProfileListView(generics.ListAPIView):
     queryset = UserProfile.objects.filter(removed=False)
