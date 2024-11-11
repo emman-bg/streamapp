@@ -91,7 +91,8 @@ class Subscription(models.Model):
         choices=SUBSCRIPTION_TYPE_CHOICES, default=WEEKLY)
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
-    channel = models.ForeignKey(Channel, null=True, blank=True, on_delete=models.SET_NULL)
+    channel = models.OneToOneField(
+        Channel, null=True, blank=True, on_delete=models.SET_NULL)
     subscription_history = HistoricalRecords()
 
     @property
@@ -112,7 +113,8 @@ class Subscription(models.Model):
 
 class Video(models.Model):
     file = models.FileField(upload_to='./videos')
-    thumbnail = models.ImageField(upload_to='./thumbnails', blank=True, null=True)
+    thumbnail = models.ImageField(
+        upload_to='./thumbnails', blank=True, null=True)
     date_uploaded = models.DateTimeField(auto_now_add=True)
     duration = models.DurationField(default=timedelta)
     uploaded_by = models.ForeignKey(
@@ -123,6 +125,8 @@ class Video(models.Model):
 class Content(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField(max_length=2000)
+    video = models.OneToOneField(
+        Video, related_name="content", on_delete=models.CASCADE)
     posted_on = models.DateTimeField(auto_now_add=True)
     posted_by = models.ForeignKey(
         UserProfile, related_name='contents', on_delete=models.CASCADE)
