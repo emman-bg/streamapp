@@ -55,10 +55,14 @@ class UserProfileCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
-        validated_data['is_active'] = validated_data.get('is_active', True)
+
         user = UserProfile.objects.create_user(
             password=password, **validated_data)
-        return user
+
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        return user.username, str(refresh.access_token), str(refresh)
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):

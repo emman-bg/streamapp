@@ -13,7 +13,6 @@ SUBSCRIPTION_DURATIONS = [
 
 class UserProfileManager(BaseUserManager):
     def create_user(self, email, username, password=None, **user_fields):
-        print(self, email, username, password, user_fields)
         if not email:
             raise ValueError("Email field is required.")
         email = self.normalize_email(email)

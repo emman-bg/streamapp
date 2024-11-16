@@ -1,4 +1,5 @@
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import *
@@ -8,14 +9,21 @@ from .serializers import *
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-class UserProfileListView(generics.ListAPIView):
-    queryset = UserProfile.objects.filter(removed=False)
-    serializer_class = UserProfileSerializer
-
 
 class UserProfileCreateView(generics.CreateAPIView):
     queryset = UserProfile.objects.filter(removed=False)
     serializer_class = UserProfileCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username, access_token, refresh_token = serializer.save()
+
+        return Response({
+            'username': username,
+            'access': access_token,
+            'refresh': refresh_token
+        }, status=status.HTTP_201_CREATED)
 
 
 class UserProfileDetailView(generics.RetrieveUpdateAPIView):

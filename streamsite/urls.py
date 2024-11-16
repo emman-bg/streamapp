@@ -5,8 +5,7 @@ from streamsite.views import *
 
 urlpatterns = [
 	path('login/', CustomTokenObtainPairView.as_view()),
-    path('user_profiles/', UserProfileListView.as_view()),
-    path('user_profile/create/', UserProfileCreateView.as_view()),
+    path('create-account/', UserProfileCreateView.as_view()),
     path('user_profile/<int:pk>', UserProfileDetailView.as_view()),
 ]
 
