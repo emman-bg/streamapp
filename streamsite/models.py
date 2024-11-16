@@ -101,7 +101,9 @@ class Subscription(models.Model):
 
     @property
     def username(self):
-        return self.user_profile.username
+        if self.subscriber:
+            return self.subscriber.username
+        return 'Unredeemed'
 
     def save(self, *args, **kwargs):
         subscription_type = kwargs.get('subscription_type', None)
