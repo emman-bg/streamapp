@@ -41,6 +41,11 @@ class UserProfileCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        if UserProfile.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError("Email is already taken.")
+        if UserProfile.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError("Username is already taken.")
+
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError(
                 "Passwords do not match."
@@ -50,6 +55,7 @@ class UserProfileCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
+        validated_data['is_active'] = validated_data.get('is_active', True)
         user = UserProfile.objects.create_user(
             password=password, **validated_data)
         return user
